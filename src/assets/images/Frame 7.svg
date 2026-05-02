@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" fill="none">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1200" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E5E7EB"/>
+      <stop offset="1" stop-color="#C5A059" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#g2)"/>
+  <rect x="96" y="96" width="1008" height="708" rx="28" fill="#111827" opacity="0.08"/>
+  <text x="140" y="220" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-size="44" fill="#111827" opacity="0.6">
+    Frame 7 (placeholder)
+  </text>
+</svg>
+
