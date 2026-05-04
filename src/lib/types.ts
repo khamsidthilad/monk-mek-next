@@ -1,5 +1,28 @@
 export type ProductCategory = "shoes" | "jersey" | "equipment";
 
+/** Storefront catalog (public shop). */
+export type StoreCategoryId = "shoes" | "jerseys" | "equipment";
+
+export type StoreProduct = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  images?: string[];
+  category: StoreCategoryId;
+  inStock: boolean;
+};
+
+export type StoreCategory = {
+  id: StoreCategoryId;
+  name: string;
+  count: number;
+};
+
 export type Product = {
   product_id: number;
   name: string;
@@ -44,4 +67,13 @@ export type DashboardStats = {
   totalOrders: number;
   totalCustomers: number;
   revenue: number;
+};
+
+/** Storefront checkout / shipping form */
+export type CustomerInfo = {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  zipCode: string;
 };

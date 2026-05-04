@@ -1,4 +1,10 @@
-import type { Customer, Order, Product } from "@/lib/types";
+import type {
+  Customer,
+  Order,
+  Product,
+  StoreCategoryId,
+  StoreProduct,
+} from "@/lib/types";
 
 export const mockProducts: Product[] = [
   {
@@ -53,3 +59,63 @@ export const mockCustomers: Customer[] = [
     is_active: false,
   },
 ];
+
+const SHOE_IMG =
+  "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80";
+const SHOE_IMG2 =
+  "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800&auto=format&fit=crop&q=80";
+const JERSEY_IMG =
+  "https://images.unsplash.com/photo-1580087256394-dc596e1c8f4f?w=800&auto=format&fit=crop&q=80";
+const EQUIP_IMG =
+  "https://images.unsplash.com/photo-1519861531473-9200262188bf?w=800&auto=format&fit=crop&q=80";
+
+const categoryOrder: StoreCategoryId[] = ["shoes", "jerseys", "equipment"];
+const categoryImage: Record<StoreCategoryId, string> = {
+  shoes: SHOE_IMG,
+  jerseys: JERSEY_IMG,
+  equipment: EQUIP_IMG,
+};
+
+export const products: StoreProduct[] = (() => {
+  const list: StoreProduct[] = [];
+  let id = 1;
+  for (const cat of categoryOrder) {
+    for (let i = 0; i < 8; i++) {
+      const base =
+        cat === "shoes" ? 95 + i * 18 : cat === "jerseys" ? 39 + i * 15 : 22 + i * 9;
+      const ratingRaw =
+        id % 4 === 0 ? 4.65 + (i % 3) * 0.05 : 4.0 + (i % 6) * 0.08;
+      const row: StoreProduct = {
+        id: String(id),
+        name:
+          cat === "jerseys"
+            ? `Pro Jersey ${i + 1}`
+            : cat === "shoes"
+              ? `Apex Trainer ${i + 1}`
+              : `Train Kit ${i + 1}`,
+        description: `High-performance ${cat} built for serious athletes. Breathable materials and durable construction with a sharp fit.`,
+        price: Math.round(base * 100) / 100,
+        originalPrice:
+          id % 3 === 0 ? Math.round((base + 35) * 100) / 100 : undefined,
+        rating: Math.min(5, Math.round(ratingRaw * 10) / 10),
+        reviews: 40 + id * 17 + i * 23,
+        image: categoryImage[cat],
+        category: cat,
+        inStock: id !== 14,
+      };
+      if (id === 1) {
+        row.images = [SHOE_IMG, SHOE_IMG2, JERSEY_IMG];
+      }
+      list.push(row);
+      id++;
+    }
+  }
+  return list;
+})();
+
+export const categories = categoryOrder.map((id) => ({
+  id,
+  name:
+    id === "shoes" ? "Shoes" : id === "jerseys" ? "Jerseys" : "Equipment",
+  count: products.filter((p) => p.category === id).length,
+}));
