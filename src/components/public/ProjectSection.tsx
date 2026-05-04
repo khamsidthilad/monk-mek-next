@@ -188,11 +188,11 @@ export function ProjectSection() {
           
            
               {selectedMap === "google" ?
-                <section className=" border-neutral-200 bg-white bg-red-500 w-full h-full">
-                    <div className="relative mt-8 aspect-[21/9] min-h-[280px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 shadow-sm sm:min-h-[360px]">
+                <section className=" border-neutral-200 bg-white w-full h-full">
+                    <div className="relative mt-8 aspect-21/9 min-h-70 w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 shadow-sm sm:min-h-[360px]">
                       <iframe
                         title="Google Maps"
-                        className="absolute inset-0 h-full w-full border-0 grayscale-[20%]"
+                        className="absolute inset-0 h-full w-full border-0 grayscale-20"
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                         src="https://maps.google.com/maps?q=Vientiane%2C+Laos&z=12&output=embed"
