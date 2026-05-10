@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Star, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import type { StoreProduct } from '@/lib/types'
+import type { StoreProduct } from '@/types/types'
 import { cn } from '@/lib/utils'
 import { useCartStore } from '@/lib/store'
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { ProductCard } from '@/components/product-card'
 import { fetchProducts } from '@/lib/api'
 import { categories } from '@/lib/data'
-import type { StoreProduct } from '@/lib/types'
+import type { StoreProduct } from '@/types/types'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -62,7 +62,9 @@ function ProductsContent() {
   }, [category, priceRange, searchQuery, page])
 
   useEffect(() => {
-    loadProducts()
+    queueMicrotask(() => {
+      void loadProducts()
+    })
   }, [loadProducts])
 
   const updateFilter = (key: string, value: string) => {

@@ -10,14 +10,22 @@ import { ProductCard } from '@/components/product-card'
 import { fetchProductById } from '@/lib/api'
 import { products } from '@/lib/data'
 import { useCartStore } from '@/lib/store'
-import type { StoreProduct } from '@/lib/types'
+import type { StoreProduct } from '@/types/types'
 import { cn } from '@/lib/utils'
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = use(params)
+  return <ProductDetailView key={id} id={id} />
+}
+
+function ProductDetailView({ id }: { id: string }) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
-  
+
   const [product, setProduct] = useState<StoreProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -25,21 +33,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [addedToCart, setAddedToCart] = useState(false)
 
   useEffect(() => {
-    setSelectedImage(0)
-    setQuantity(1)
-  }, [id])
-
-  useEffect(() => {
     let cancelled = false
-    async function loadProduct() {
-      setLoading(true)
-      const data = await fetchProductById(id)
-      if (!cancelled) {
-        setProduct(data)
-        setLoading(false)
-      }
-    }
-    loadProduct()
+    queueMicrotask(() => {
+      void (async () => {
+        setLoading(true)
+        const data = await fetchProductById(id)
+        if (!cancelled) {
+          setProduct(data)
+          setLoading(false)
+        }
+      })()
+    })
     return () => {
       cancelled = true
     }

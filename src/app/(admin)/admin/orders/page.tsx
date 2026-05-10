@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { mockOrders } from '@/lib/data'
-import { Order, OrderStatus } from '@/lib/types'
+import { Order, OrderStatus } from '@/types/types'
 
 interface OrdersTableProps {
   initialOrders: Order[]

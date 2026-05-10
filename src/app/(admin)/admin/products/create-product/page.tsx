@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,45 +21,105 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
-import { Product } from '@/lib/types'
+import type { Product, ProductCategory } from '@/types/types'
+import { PRODUCT_CATEGORY_TO_CATE_ID } from '@/types/createProduct.type'
+import { buildCreateProductFormData, useCreateProductMutation } from '@/services/api/product.api'
 
 interface ProductFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   product?: Product | null
   onSubmit: (product: Omit<Product, 'product_id' | 'created_at'> & { product_id?: number }) => void
+  /**
+   * Create route: POST `/products/create` with FormData instead of parent-local state only.
+   * Ignored when `product` is set (edit flows still use `onSubmit`).
+   */
+  submitViaCreateApi?: boolean
 }
 
-export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFormProps) {
-  const [formData, setFormData] = useState({
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price?.toString() || '',
-    quantity: product?.quantity?.toString() || '',
-    category: product?.category || 'shoes' as const,
-    image: product?.image || '',
-  })
+const emptyForm = {
+  name: '',
+  description: '',
+  price: '',
+  quantity: '',
+  category: 'shoes' as ProductCategory,
+  image: '',
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+export function ProductForm({
+  open,
+  onOpenChange,
+  product,
+  onSubmit,
+  submitViaCreateApi = false,
+}: ProductFormProps) {
+  const [formData, setFormData] = useState(emptyForm)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [createProduct, { isLoading: isCreating }] = useCreateProductMutation()
+
+  useEffect(() => {
+    if (!open) return;
+    queueMicrotask(() => {
+      setFormData({
+        name: product?.name || '',
+        description: product?.description || '',
+        price: product?.price != null ? String(product.price) : '',
+        quantity: product?.quantity != null ? String(product.quantity) : '',
+        category: (product?.category ?? 'shoes') as ProductCategory,
+        image: product?.image || '',
+      });
+      setSubmitError(null);
+    });
+  }, [open, product]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
+
+    if (submitViaCreateApi && !product) {
+      try {
+        const fd = buildCreateProductFormData({
+          pro_name: formData.name,
+          pro_detail: formData.description,
+          pro_price: Number.parseFloat(formData.price),
+          pro_qty: Number.parseInt(formData.quantity, 10),
+          cate_id: PRODUCT_CATEGORY_TO_CATE_ID[formData.category],
+          pro_image_url: formData.image || undefined,
+        })
+        const result = await createProduct(fd).unwrap()
+        if (!result.success) {
+          setSubmitError('Server did not confirm product creation.')
+          return
+        }
+        onOpenChange(false)
+        setFormData(emptyForm)
+      } catch (err) {
+        const msg =
+          typeof err === 'object' &&
+          err !== null &&
+          'data' in err &&
+          typeof (err as { data?: unknown }).data === 'object' &&
+          (err as { data?: { message?: string } }).data?.message != null
+            ? String((err as { data: { message?: string } }).data.message)
+            : err instanceof Error
+              ? err.message
+              : 'Request failed.'
+        setSubmitError(msg)
+      }
+      return
+    }
+
     onSubmit({
       ...(product?.product_id && { product_id: product.product_id }),
       name: formData.name,
       description: formData.description,
-      price: parseFloat(formData.price),
-      quantity: parseInt(formData.quantity),
-      category: formData.category as 'shoes' | 'jersey' | 'equipment',
+      price: Number.parseFloat(formData.price),
+      quantity: Number.parseInt(formData.quantity, 10),
+      category: formData.category as ProductCategory,
       image: formData.image || `/products/placeholder.jpg`,
     })
     onOpenChange(false)
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      quantity: '',
-      category: 'shoes',
-      image: '',
-    })
+    setFormData(emptyForm)
   }
 
   return (
@@ -73,6 +133,11 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <FieldGroup className="gap-4 py-4">
+            {submitError ? (
+              <p className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                {submitError}
+              </p>
+            ) : null}
             <Field>
               <FieldLabel htmlFor="name">Product Name</FieldLabel>
               <Input
@@ -124,7 +189,8 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
               <FieldLabel htmlFor="category">Category</FieldLabel>
               <Select
                 value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value as 'shoes' | 'jersey' | 'equipment' })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category: value as ProductCategory })}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select category" />
@@ -147,11 +213,11 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
             </Field>
           </FieldGroup>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isCreating}>
               Cancel
             </Button>
-            <Button type="submit">
-              {product ? 'Update Product' : 'Add Product'}
+            <Button type="submit" disabled={isCreating}>
+              {product ? 'Update Product' : isCreating ? 'Creating…' : 'Add Product'}
             </Button>
           </DialogFooter>
         </form>
@@ -166,6 +232,7 @@ export default function CreateProductPage() {
     <div className="p-4 md:p-6">
       <ProductForm
         open={true}
+        submitViaCreateApi
         onOpenChange={(open) => {
           if (!open) router.push("/admin/products");
         }}

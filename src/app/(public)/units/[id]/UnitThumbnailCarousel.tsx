@@ -8,7 +8,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Montserrat } from "next/font/google";
 import { Playfair_Display } from "next/font/google";
 import { cn } from "@/lib/utils"
 import imDetail from "@/assets/images/detail.svg";
@@ -17,11 +16,6 @@ import Image from "next/image";
 const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
-})
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["400", "500"],
 })
 
 const THUMBNAIL_SLIDES = Array.from({ length: 10 }, (_, i) => i + 1);

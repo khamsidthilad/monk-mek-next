@@ -4,7 +4,7 @@ import type {
   Product,
   StoreCategoryId,
   StoreProduct,
-} from "@/lib/types";
+} from "@/types/types";
 
 export const mockProducts: Product[] = [
   {

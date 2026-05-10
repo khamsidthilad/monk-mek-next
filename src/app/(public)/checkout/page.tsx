@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ArrowLeft, Check, Loader2, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,10 +12,9 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { useCartHydrated } from '@/lib/use-cart-hydrated'
 import { useCartStore } from '@/lib/store'
 import { createOrder } from '@/lib/api'
-import type { CustomerInfo } from '@/lib/types'
+import type { CustomerInfo } from '@/types/types'
 
 export default function CheckoutPage() {
-  const router = useRouter()
   const cartHydrated = useCartHydrated()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
