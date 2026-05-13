@@ -1,6 +1,6 @@
 import { products as catalog } from "@/lib/data";
 import type { CartLine } from "@/lib/store";
-import type { CustomerInfo, StoreProduct } from "@/lib/types";
+import type { CustomerInfo, StoreProduct } from "@/types/types";
 
 export type FetchProductsParams = {
   category?: string;

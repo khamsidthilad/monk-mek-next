@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { StoreProduct } from "@/lib/types";
+import type { StoreProduct } from "@/types/types";
 
 export type CartLine = {
   product: StoreProduct;

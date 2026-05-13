@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { mockCustomers } from '@/lib/data'
-import { Customer } from '@/lib/types'
+import { Customer } from '@/types/types'
 
 interface CustomersTableProps {
   initialCustomers: Customer[]
