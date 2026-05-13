@@ -22,8 +22,40 @@ import {
 } from '@/components/ui/select'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import type { Product, ProductCategory } from '@/types/types'
+import type { CreateProductData } from '@/types/createProduct.type'
 import { PRODUCT_CATEGORY_TO_CATE_ID } from '@/types/createProduct.type'
 import { buildCreateProductFormData, useCreateProductMutation } from '@/services/api/product.api'
+
+function payloadLooksCreated(res: unknown): boolean {
+  if (!res || typeof res !== 'object' || !('data' in res)) return false
+  const data = (res as { data?: unknown }).data as CreateProductData | undefined
+  if (!data || data.pro_id == null) return false
+  const idNum = typeof data.pro_id === 'string' ? Number(data.pro_id) : data.pro_id
+  return Number.isFinite(idNum)
+}
+
+function createProductErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err !== 'object' || err === null) return 'Request failed.'
+  const e = err as {
+    status?: number | string
+    data?: unknown
+    error?: string
+    message?: string
+  }
+  if (typeof e.data === 'string' && e.data.trim()) return e.data.trim()
+  if (e.data && typeof e.data === 'object') {
+    const d = e.data as Record<string, unknown>
+    if (typeof d.message === 'string') return d.message
+    if (typeof d.error === 'string') return d.error
+  }
+  if (typeof e.error === 'string') return e.error
+  if (e.status === 'FETCH_ERROR')
+    return 'Could not reach the API. Confirm NEXT_PUBLIC_API_BASE_URL and that the backend is running (CORS).'
+  if (e.status === 'PARSING_ERROR') return 'The server returned a response we could not read as JSON.'
+  if (typeof e.status === 'number') return `Request failed (${e.status}).`
+  return 'Request failed.'
+}
 
 interface ProductFormProps {
   open: boolean
@@ -77,34 +109,35 @@ export function ProductForm({
     setSubmitError(null)
 
     if (submitViaCreateApi && !product) {
+      const pro_price = Number.parseFloat(formData.price)
+      const pro_qty = Number.parseInt(formData.quantity, 10)
+      if (!Number.isFinite(pro_price) || !Number.isFinite(pro_qty)) {
+        setSubmitError('Enter a valid price and quantity.')
+        return
+      }
+
       try {
         const fd = buildCreateProductFormData({
           pro_name: formData.name,
           pro_detail: formData.description,
-          pro_price: Number.parseFloat(formData.price),
-          pro_qty: Number.parseInt(formData.quantity, 10),
+          pro_price,
+          pro_qty,
           cate_id: PRODUCT_CATEGORY_TO_CATE_ID[formData.category],
           pro_image_url: formData.image || undefined,
         })
         const result = await createProduct(fd).unwrap()
-        if (!result.success) {
-          setSubmitError('Server did not confirm product creation.')
+        // Many backends return `{ data }` without `success: true`; accept a real `pro_id`.
+        const ok =
+          result.success !== false &&
+          payloadLooksCreated(result)
+        if (!ok) {
+          setSubmitError('Server did not return a created product.')
           return
         }
         onOpenChange(false)
         setFormData(emptyForm)
       } catch (err) {
-        const msg =
-          typeof err === 'object' &&
-          err !== null &&
-          'data' in err &&
-          typeof (err as { data?: unknown }).data === 'object' &&
-          (err as { data?: { message?: string } }).data?.message != null
-            ? String((err as { data: { message?: string } }).data.message)
-            : err instanceof Error
-              ? err.message
-              : 'Request failed.'
-        setSubmitError(msg)
+        setSubmitError(createProductErrorMessage(err))
       }
       return
     }
